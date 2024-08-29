@@ -52,33 +52,7 @@ def initialize_data(conn):
             ('R002', 'Jane Smith', 34, '8765432109', 'TPA2'),
             ('R003', 'Alice Brown', 29, '7654321098', 'TPA3'),
             ('R004', 'Bob Johnson', 52, '6543210987', 'TPA1'),
-            ('R005', 'Carol White', 41, '5432109876', 'TPA2'),
-            ('R006', 'David Lee', 37, '4321098765', 'TPA3'),
-            ('R007', 'Emily Davis', 26, '3210987654', 'TPA4'),
-            ('R008', 'Frank Wilson', 55, '2109876543', 'TPA5'),
-            ('R009', 'Grace Martinez', 30, '1098765432', 'TPA6'),
-            ('R010', 'Henry Taylor', 48, '9876504321', 'TPA7'),
-            ('R011', 'Ivy Anderson', 42, '8765432101', 'TPA8'),
-            ('R012', 'Jack Thomas', 31, '7654321097', 'TPA9'),
-            ('R013', 'Kara White', 39, '6543210986', 'TPA10'),
-            ('R014', 'Leo Harris', 28, '5432109875', 'TPA11'),
-            ('R015', 'Mia Clark', 49, '4321098764', 'TPA12'),
-            ('R016', 'Noah Lewis', 27, '3210987653', 'TPA13'),
-            ('R017', 'Olivia Walker', 33, '2109876542', 'TPA14'),
-            ('R018', 'Paul Scott', 40, '1098765431', 'TPA15'),
-            ('R019', 'Quinn Adams', 50, '9876543219', 'TPA16'),
-            ('R020', 'Rachel Baker', 32, '8765432108', 'TPA17'),
-            ('R021', 'Steve Nelson', 44, '7654321096', 'TPA18'),
-            ('R022', 'Tina Carter', 38, '6543210985', 'TPA19'),
-            ('R023', 'Ursula Mitchell', 25, '5432109874', 'TPA20'),
-            ('R024', 'Victor Roberts', 43, '4321098763', 'TPA21'),
-            ('R025', 'Wendy Gonzalez', 29, '3210987652', 'TPA22'),
-            ('R026', 'Xander Turner', 47, '2109876541', 'TPA23'),
-            ('R027', 'Yara Collins', 36, '1098765430', 'TPA24'),
-            ('R028', 'Zane Stewart', 53, '9876543218', 'TPA25'),
-            ('R029', 'Amy Cooper', 41, '8765432107', 'TPA26'),
-            ('R030', 'Ben Simmons', 34, '7654321095', 'TPA27'),
-            ('R031', 'Clara Gray', 46, '6543210984', 'TPA28')
+            ('R005', 'Carol White', 41, '5432109876', 'TPA2')
         """
     )
     conn.commit()
@@ -187,10 +161,6 @@ edited_df = st.data_editor(
     df,
     disabled=["id"],  # Don't allow editing the 'id' column.
     num_rows="dynamic",  # Allow appending/deleting rows.
-    column_config={
-        "patient_age": st.column_config.NumberColumn(),
-        "patient_mobile": st.column_config.TextColumn(),
-    },
     key="referrals_table",
 )
 
@@ -249,4 +219,16 @@ st.altair_chart(
     alt.Chart(tpa_data)
     .mark_bar()
     .encode(
-        x=alt.X('Count', title
+        x=alt.X('Count', title='Number of Referrals'),
+        y=alt.Y('TPA Partner', sort='-x', title='TPA Partner'),
+        color='TPA Partner'
+    )
+    .properties(
+        title="Best-Selling TPAs"
+    )
+    .interactive()
+    .configure_axis(
+        labelAngle=0
+    ),
+    use_container_width=True
+)

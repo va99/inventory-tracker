@@ -179,11 +179,48 @@ st.button(
 )
 
 # -----------------------------------------------------------------------------
-# Additional features or visualizations could be added here
+# Visualization: Bed Occupancy
 
-# Example placeholder for additional features
-""
-""
-""
+# Placeholder data for bed occupancy
+# In a real application, this data should come from a database or real-time data source
+bed_occupancy_data = pd.DataFrame({
+    'Unit': ['ICU', 'General Ward', 'Emergency', 'Maternity', 'Pediatrics'],
+    'Occupied': [10, 30, 5, 8, 15],
+    'Total': [15, 50, 10, 12, 20]
+})
+
+bed_occupancy_data['Available'] = bed_occupancy_data['Total'] - bed_occupancy_data['Occupied']
+
+st.subheader("Bed Occupancy", divider="blue")
+
+st.altair_chart(
+    alt.Chart(bed_occupancy_data)
+    .mark_bar()
+    .encode(
+        x=alt.X('Unit', sort=None, title='Unit'),
+        y=alt.Y('Available', title='Available Beds'),
+        color='Unit'
+    ),
+    use_container_width=True
+)
+
+# -----------------------------------------------------------------------------
+# Visualization: Best-Selling TPAs
+
+tpa_data = df['tpa_partner'].value_counts().reset_index()
+tpa_data.columns = ['TPA Partner', 'Count']
+
+st.subheader("Best-Selling TPAs", divider="green")
+
+st.altair_chart(
+    alt.Chart(tpa_data)
+    .mark_bar()
+    .encode(
+        x=alt.X('TPA Partner', sort=None, title='TPA Partner'),
+        y=alt.Y('Count', title='Number of Referrals'),
+        color='TPA Partner'
+    ),
+    use_container_width=True
+)
 
 # -----------------------------------------------------------------------------

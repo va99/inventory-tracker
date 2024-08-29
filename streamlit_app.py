@@ -18,7 +18,7 @@ st.set_page_config(
 def connect_db():
     """Connects to the sqlite database."""
 
-    DB_FILENAME = Path(__file__).parent / "patient_tracker.db"
+    DB_FILENAME = Path(__file__).parent / "referral_patient_tracker.db"
     db_already_exists = DB_FILENAME.exists()
 
     conn = sqlite3.connect(DB_FILENAME)
@@ -27,52 +27,42 @@ def connect_db():
     return conn, db_was_just_created
 
 def initialize_data(conn):
-    """Initializes the referral patient tracker table with some data."""
+    """Initializes the referral data table with some data."""
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        CREATE TABLE IF NOT EXISTS patient_tracker (
+        CREATE TABLE IF NOT EXISTS referrals (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            tpa_name TEXT,
-            price REAL,
-            bed_units_used INTEGER,
-            bed_units_available INTEGER,
-            cost_price REAL,
-            reorder_point INTEGER,
-            description TEXT
+            referral_id TEXT,
+            patient_name TEXT,
+            patient_age INTEGER,
+            patient_mobile TEXT,
+            tpa_partner TEXT
         )
         """
     )
 
     cursor.execute(
         """
-        INSERT INTO patient_tracker
-            (tpa_name, price, bed_units_used, bed_units_available, cost_price, reorder_point, description)
+        INSERT INTO referrals
+            (referral_id, patient_name, patient_age, patient_mobile, tpa_partner)
         VALUES
-            -- TPAs
-            ('TPA A', 15000, 115, 15, 8000, 16, 'Third Party Administrator A'),
-            ('TPA B', 20000, 93, 8, 12000, 10, 'Third Party Administrator B'),
-            ('TPA C', 25000, 12, 18, 15000, 8, 'Third Party Administrator C'),
-            ('TPA D', 27500, 11, 14, 18000, 5, 'Third Party Administrator D'),
-            ('TPA E', 22500, 11, 9, 13000, 5, 'Third Party Administrator E'),
-
-            -- Miscellaneous
-            ('TPA F', 20000, 34, 16, 10000, 10, 'Third Party Administrator F'),
-            ('TPA G', 15000, 6, 19, 8000, 15, 'Third Party Administrator G'),
-            ('TPA H', 22500, 3, 12, 13000, 8, 'Third Party Administrator H'),
-            ('TPA I', 25000, 8, 8, 15000, 5, 'Third Party Administrator I'),
-            ('TPA J', 17500, 5, 10, 10000, 8, 'Third Party Administrator J')
+            ('R001', 'John Doe', 45, '9876543210', 'TPA1'),
+            ('R002', 'Jane Smith', 34, '8765432109', 'TPA2'),
+            ('R003', 'Alice Brown', 29, '7654321098', 'TPA3'),
+            ('R004', 'Bob Johnson', 52, '6543210987', 'TPA1'),
+            ('R005', 'Carol White', 41, '5432109876', 'TPA2')
         """
     )
     conn.commit()
 
 def load_data(conn):
-    """Loads the referral patient data from the database."""
+    """Loads the referral data from the database."""
     cursor = conn.cursor()
 
     try:
-        cursor.execute("SELECT * FROM patient_tracker")
+        cursor.execute("SELECT * FROM referrals")
         data = cursor.fetchall()
     except:
         return None
@@ -81,24 +71,22 @@ def load_data(conn):
         data,
         columns=[
             "id",
-            "tpa_name",
-            "price",
-            "bed_units_used",
-            "bed_units_available",
-            "cost_price",
-            "reorder_point",
-            "description",
+            "referral_id",
+            "patient_name",
+            "patient_age",
+            "patient_mobile",
+            "tpa_partner",
         ],
     )
 
     return df
 
 def update_data(conn, df, changes):
-    """Updates the referral patient data in the database."""
+    """Updates the referral data in the database."""
     cursor = conn.cursor()
 
     if changes["edited_rows"]:
-        deltas = st.session_state.patient_tracker_table["edited_rows"]
+        deltas = st.session_state.referrals_table["edited_rows"]
         rows = []
 
         for i, delta in deltas.items():
@@ -108,15 +96,13 @@ def update_data(conn, df, changes):
 
         cursor.executemany(
             """
-            UPDATE patient_tracker
+            UPDATE referrals
             SET
-                tpa_name = :tpa_name,
-                price = :price,
-                bed_units_used = :bed_units_used,
-                bed_units_available = :bed_units_available,
-                cost_price = :cost_price,
-                reorder_point = :reorder_point,
-                description = :description
+                referral_id = :referral_id,
+                patient_name = :patient_name,
+                patient_age = :patient_age,
+                patient_mobile = :patient_mobile,
+                tpa_partner = :tpa_partner
             WHERE id = :id
             """,
             rows,
@@ -125,36 +111,36 @@ def update_data(conn, df, changes):
     if changes["added_rows"]:
         cursor.executemany(
             """
-            INSERT INTO patient_tracker
-                (id, tpa_name, price, bed_units_used, bed_units_available, cost_price, reorder_point, description)
+            INSERT INTO referrals
+                (id, referral_id, patient_name, patient_age, patient_mobile, tpa_partner)
             VALUES
-                (:id, :tpa_name, :price, :bed_units_used, :bed_units_available, :cost_price, :reorder_point, :description)
+                (:id, :referral_id, :patient_name, :patient_age, :patient_mobile, :tpa_partner)
             """,
             (defaultdict(lambda: None, row) for row in changes["added_rows"]),
         )
 
     if changes["deleted_rows"]:
         cursor.executemany(
-            "DELETE FROM patient_tracker WHERE id = :id",
+            "DELETE FROM referrals WHERE id = :id",
             ({"id": int(df.loc[i, "id"])} for i in changes["deleted_rows"]),
         )
 
     conn.commit()
 
 # -----------------------------------------------------------------------------
-# Draw the actual page, starting with the referral patient table.
+# Draw the actual page, starting with the referrals table.
 
 # Set the title that appears at the top of the page.
 """
 # :hospital: Referral Patient Tracker
 
 **Welcome to the Referral Patient Tracker!**
-This page reads and writes directly from/to our patient tracker database.
+This page reads and writes directly from/to our referrals database.
 """
 
 st.info(
     """
-    Use the table below to add, remove, and edit TPAs.
+    Use the table below to add, remove, and edit patient referrals.
     And don't forget to commit your changes when you're done.
     """
 )
@@ -176,14 +162,12 @@ edited_df = st.data_editor(
     disabled=["id"],  # Don't allow editing the 'id' column.
     num_rows="dynamic",  # Allow appending/deleting rows.
     column_config={
-        # Show currency symbol before price columns.
-        "price": st.column_config.NumberColumn(format="₹%.2f"),
-        "cost_price": st.column_config.NumberColumn(format="₹%.2f"),
+        "patient_age": st.column_config.NumberColumn(format="%d"),
     },
-    key="patient_tracker_table",
+    key="referrals_table",
 )
 
-has_uncommitted_changes = any(len(v) for v in st.session_state.patient_tracker_table.values())
+has_uncommitted_changes = any(len(v) for v in st.session_state.referrals_table.values())
 
 st.button(
     "Commit changes",
@@ -191,74 +175,15 @@ st.button(
     disabled=not has_uncommitted_changes,
     # Update data in database
     on_click=update_data,
-    args=(conn, df, st.session_state.patient_tracker_table),
+    args=(conn, df, st.session_state.referrals_table),
 )
 
 # -----------------------------------------------------------------------------
-# Now some cool charts
+# Additional features or visualizations could be added here
 
-# Add some space
-""
-""
-""
-
-st.subheader("Bed Units Available", divider="red")
-
-need_to_reorder = df[df["bed_units_available"] < df["reorder_point"]].loc[:, "tpa_name"]
-
-if len(need_to_reorder) > 0:
-    items = "\n".join(f"* {name}" for name in need_to_reorder)
-
-    st.error(f"We're running dangerously low on the following TPAs:\n {items}")
-
-""
-""
-
-st.altair_chart(
-    # Layer 1: Bar chart.
-    alt.Chart(df)
-    .mark_bar(
-        orient="horizontal",
-    )
-    .encode(
-        x="bed_units_available",
-        y="tpa_name",
-    )
-    # Layer 2: Chart showing the reorder point.
-    + alt.Chart(df)
-    .mark_point(
-        shape="diamond",
-        filled=True,
-        size=50,
-        color="salmon",
-        opacity=1,
-    )
-    .encode(
-        x="reorder_point",
-        y="tpa_name",
-    ),
-    use_container_width=True,
-)
-
-st.caption("NOTE: The :diamonds: location shows the reorder point.")
-
+# Example placeholder for additional features
 ""
 ""
 ""
 
 # -----------------------------------------------------------------------------
-
-st.subheader("Top Empanelled TPAs", divider="orange")
-
-""
-""
-
-st.altair_chart(
-    alt.Chart(df)
-    .mark_bar(orient="horizontal")
-    .encode(
-        x="bed_units_used",
-        y=alt.Y("tpa_name").sort("-x"),
-    ),
-    use_container_width=True,
-)

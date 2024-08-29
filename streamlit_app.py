@@ -127,6 +127,10 @@ def update_data(conn, df, changes):
 
     conn.commit()
 
+def mark_patient_accepted(patient_id):
+    """Marks a patient as accepted (dummy function for illustration)."""
+    st.write(f"Patient {patient_id} accepted.")
+
 # -----------------------------------------------------------------------------
 # Draw the actual page, starting with the referrals table.
 
@@ -174,6 +178,30 @@ st.button(
     on_click=update_data,
     args=(conn, df, st.session_state.referrals_table),
 )
+
+# -----------------------------------------------------------------------------
+# Display referrals with 'Accept' button
+
+st.subheader("Patient Referrals")
+
+for _, row in df.iterrows():
+    col1, col2, col3, col4, col5, col6, col7 = st.columns([2, 2, 2, 2, 2, 1, 1])
+    
+    with col1:
+        st.write(row['referral_id'])
+    with col2:
+        st.write(row['patient_name'])
+    with col3:
+        st.write(row['patient_age'])
+    with col4:
+        st.write(row['patient_mobile'])
+    with col5:
+        st.write(row['tpa_partner'])
+    with col6:
+        st.write("")
+    with col7:
+        if st.button('Accept', key=f"accept_{row['id']}"):
+            mark_patient_accepted(row['referral_id'])
 
 # -----------------------------------------------------------------------------
 # Visualization: Bed Occupancy

@@ -191,18 +191,17 @@ bed_occupancy_data = pd.DataFrame({
 
 bed_occupancy_data['Available'] = bed_occupancy_data['Total'] - bed_occupancy_data['Occupied']
 
-st.subheader("Bed Occupancy", divider="blue")
+st.subheader("Bed Occupancy")
 
-st.altair_chart(
-    alt.Chart(bed_occupancy_data)
-    .mark_bar()
-    .encode(
-        x=alt.X('Unit', sort=None, title='Unit'),
-        y=alt.Y('Available', title='Available Beds'),
-        color='Unit'
-    ),
-    use_container_width=True
+bed_occupancy_chart = alt.Chart(bed_occupancy_data).mark_bar().encode(
+    x=alt.X('Unit', title='Unit'),
+    y=alt.Y('Available', title='Available Beds'),
+    color='Unit'
+).properties(
+    title="Bed Occupancy"
 )
+
+st.altair_chart(bed_occupancy_chart, use_container_width=True)
 
 # -----------------------------------------------------------------------------
 # Visualization: Best-Selling TPAs
@@ -210,17 +209,16 @@ st.altair_chart(
 tpa_data = df['tpa_partner'].value_counts().reset_index()
 tpa_data.columns = ['TPA Partner', 'Count']
 
-st.subheader("Best-Selling TPAs", divider="green")
+st.subheader("Best-Selling TPAs")
 
-st.altair_chart(
-    alt.Chart(tpa_data)
-    .mark_bar()
-    .encode(
-        x=alt.X('TPA Partner', sort=None, title='TPA Partner'),
-        y=alt.Y('Count', title='Number of Referrals'),
-        color='TPA Partner'
-    ),
-    use_container_width=True
+tpa_chart = alt.Chart(tpa_data).mark_bar().encode(
+    x=alt.X('TPA Partner', title='TPA Partner'),
+    y=alt.Y('Count', title='Number of Referrals'),
+    color='TPA Partner'
+).properties(
+    title="Best-Selling TPAs"
 )
+
+st.altair_chart(tpa_chart, use_container_width=True)
 
 # -----------------------------------------------------------------------------

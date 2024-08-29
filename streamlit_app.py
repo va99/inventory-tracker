@@ -27,7 +27,7 @@ def connect_db():
     return conn, db_was_just_created
 
 def initialize_data(conn):
-    """Initializes the referral data table with some data."""
+    """Initializes the referral patient tracker table with some data."""
     cursor = conn.cursor()
 
     cursor.execute(
@@ -58,7 +58,7 @@ def initialize_data(conn):
     conn.commit()
 
 def load_data(conn):
-    """Loads the referral data from the database."""
+    """Loads the referral patient data from the database."""
     cursor = conn.cursor()
 
     try:
@@ -82,7 +82,7 @@ def load_data(conn):
     return df
 
 def update_data(conn, df, changes):
-    """Updates the referral data in the database."""
+    """Updates the referral patient data in the database."""
     cursor = conn.cursor()
 
     if changes["edited_rows"]:
@@ -135,7 +135,7 @@ def update_data(conn, df, changes):
 # :hospital: Referral Patient Tracker
 
 **Welcome to the Referral Patient Tracker!**
-This page reads and writes directly from/to our referrals database.
+This page reads and writes directly from/to our referral patient database.
 """
 
 st.info(
@@ -161,9 +161,6 @@ edited_df = st.data_editor(
     df,
     disabled=["id"],  # Don't allow editing the 'id' column.
     num_rows="dynamic",  # Allow appending/deleting rows.
-    column_config={
-        "patient_age": st.column_config.NumberColumn(format="%d"),
-    },
     key="referrals_table",
 )
 
@@ -182,7 +179,6 @@ st.button(
 # Visualization: Bed Occupancy
 
 # Placeholder data for bed occupancy
-# In a real application, this data should come from a database or real-time data source
 bed_occupancy_data = pd.DataFrame({
     'Unit': ['ICU', 'General Ward', 'Emergency', 'Maternity', 'Pediatrics'],
     'Occupied': [10, 30, 5, 8, 15],
@@ -193,15 +189,23 @@ bed_occupancy_data['Available'] = bed_occupancy_data['Total'] - bed_occupancy_da
 
 st.subheader("Bed Occupancy")
 
-bed_occupancy_chart = alt.Chart(bed_occupancy_data).mark_bar().encode(
-    x=alt.X('Unit', title='Unit'),
-    y=alt.Y('Available', title='Available Beds'),
-    color='Unit'
-).properties(
-    title="Bed Occupancy"
+st.altair_chart(
+    alt.Chart(bed_occupancy_data)
+    .mark_bar()
+    .encode(
+        x=alt.X('Unit', title='Unit'),
+        y=alt.Y('Available', title='Available Beds'),
+        color='Unit'
+    )
+    .properties(
+        title="Bed Occupancy"
+    )
+    .interactive()
+    .configure_axis(
+        labelAngle=0
+    ),
+    use_container_width=True
 )
-
-st.altair_chart(bed_occupancy_chart, use_container_width=True)
 
 # -----------------------------------------------------------------------------
 # Visualization: Best-Selling TPAs
@@ -211,14 +215,20 @@ tpa_data.columns = ['TPA Partner', 'Count']
 
 st.subheader("Best-Selling TPAs")
 
-tpa_chart = alt.Chart(tpa_data).mark_bar().encode(
-    x=alt.X('TPA Partner', title='TPA Partner'),
-    y=alt.Y('Count', title='Number of Referrals'),
-    color='TPA Partner'
-).properties(
-    title="Best-Selling TPAs"
+st.altair_chart(
+    alt.Chart(tpa_data)
+    .mark_bar()
+    .encode(
+        x=alt.X('Count', title='Number of Referrals'),
+        y=alt.Y('TPA Partner', sort='-x', title='TPA Partner'),
+        color='TPA Partner'
+    )
+    .properties(
+        title="Best-Selling TPAs"
+    )
+    .interactive()
+    .configure_axis(
+        labelAngle=0
+    ),
+    use_container_width=True
 )
-
-st.altair_chart(tpa_chart, use_container_width=True)
-
-# -----------------------------------------------------------------------------

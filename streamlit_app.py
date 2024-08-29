@@ -127,9 +127,9 @@ def update_data(conn, df, changes):
 
     conn.commit()
 
-def mark_patient_accepted(patient_id):
+def mark_patient_accepted(referral_id):
     """Marks a patient as accepted (dummy function for illustration)."""
-    st.write(f"Patient {patient_id} accepted.")
+    st.write(f"Patient {referral_id} accepted.")
 
 # -----------------------------------------------------------------------------
 # Draw the actual page, starting with the referrals table.
@@ -160,13 +160,22 @@ if db_was_just_created:
 # Load data from database
 df = load_data(conn)
 
-# Display data with editable table
+# Display data with editable table and Accept button
 edited_df = st.data_editor(
     df,
     disabled=["id"],  # Don't allow editing the 'id' column.
     num_rows="dynamic",  # Allow appending/deleting rows.
+    column_config={
+        "patient_age": st.column_config.NumberColumn(),
+        "patient_mobile": st.column_config.TextColumn(),
+    },
     key="referrals_table",
 )
+
+# Show the 'Accept' button for each patient in the table
+for _, row in df.iterrows():
+    if st.button(f'Accept {row["referral_id"]}', key=f"accept_{row['id']}"):
+        mark_patient_accepted(row["referral_id"])
 
 has_uncommitted_changes = any(len(v) for v in st.session_state.referrals_table.values())
 
@@ -178,30 +187,6 @@ st.button(
     on_click=update_data,
     args=(conn, df, st.session_state.referrals_table),
 )
-
-# -----------------------------------------------------------------------------
-# Display referrals with 'Accept' button
-
-st.subheader("Patient Referrals")
-
-for _, row in df.iterrows():
-    col1, col2, col3, col4, col5, col6, col7 = st.columns([2, 2, 2, 2, 2, 1, 1])
-    
-    with col1:
-        st.write(row['referral_id'])
-    with col2:
-        st.write(row['patient_name'])
-    with col3:
-        st.write(row['patient_age'])
-    with col4:
-        st.write(row['patient_mobile'])
-    with col5:
-        st.write(row['tpa_partner'])
-    with col6:
-        st.write("")
-    with col7:
-        if st.button('Accept', key=f"accept_{row['id']}"):
-            mark_patient_accepted(row['referral_id'])
 
 # -----------------------------------------------------------------------------
 # Visualization: Bed Occupancy

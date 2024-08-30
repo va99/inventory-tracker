@@ -56,7 +56,6 @@ def initialize_data(conn):
 def load_data(conn):
     """Loads the referral patient data from the database."""
     cursor = conn.cursor()
-
     try:
         cursor.execute("SELECT * FROM referrals")
         data = cursor.fetchall()
@@ -74,7 +73,6 @@ def load_data(conn):
             "tpa_partner",
         ],
     )
-
     return df
 
 def update_data(conn, df, changes):
@@ -84,7 +82,6 @@ def update_data(conn, df, changes):
     if changes["edited_rows"]:
         deltas = st.session_state.referrals_table["edited_rows"]
         rows = []
-
         for i, delta in deltas.items():
             row_dict = df.iloc[i].to_dict()
             row_dict.update(delta)
@@ -173,12 +170,16 @@ if not st.session_state['form_submitted']:
         submit_button = st.form_submit_button(label='Submit')
         
         if submit_button:
-            add_hospital_to_db(hospital_name, description, city, state, total_beds, empanelled_tpas)
-            st.session_state['form_submitted'] = True
-            st.experimental_rerun()  # Refresh the app to show the new screen
+            try:
+                add_hospital_to_db(hospital_name, description, city, state, total_beds, empanelled_tpas)
+                st.session_state['form_submitted'] = True
+                st.experimental_rerun()  # Refresh the app to show the new screen
+            except Exception as e:
+                st.error(f"Error occurred while submitting the form: {e}")
+
 else:
     # Display a message on the new screen
-    st.title("Welcome to the Hospital App")
+    st.title(f"HELLO {hospital_name}")
     st.write("Thank you for submitting your details. The hospital has been added.")
     st.write("You can now navigate to the referral tracking screen from the sidebar.")
 

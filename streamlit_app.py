@@ -1,7 +1,6 @@
 from collections import defaultdict
 from pathlib import Path
 import sqlite3
-
 import streamlit as st
 import altair as alt
 import pandas as pd
@@ -17,13 +16,10 @@ st.set_page_config(
 
 def connect_db():
     """Connects to the sqlite database."""
-
     DB_FILENAME = Path(__file__).parent / "referral_patient_tracker.db"
     db_already_exists = DB_FILENAME.exists()
-
     conn = sqlite3.connect(DB_FILENAME)
     db_was_just_created = not db_already_exists
-
     return conn, db_was_just_created
 
 def initialize_data(conn):
@@ -127,23 +123,59 @@ def update_data(conn, df, changes):
 
     conn.commit()
 
+def add_hospital_to_db(name, description, city, state, total_beds, tpa):
+    """Adds new hospital details to the database."""
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS hospitals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            hospital_name TEXT,
+            description TEXT,
+            city TEXT,
+            state TEXT,
+            total_beds INTEGER,
+            empanelled_tpa TEXT
+        )
+        """
+    )
+    cursor.execute(
+        """
+        INSERT INTO hospitals (hospital_name, description, city, state, total_beds, empanelled_tpa)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        (name, description, city, state, total_beds, tpa)
+    )
+    conn.commit()
+
 # -----------------------------------------------------------------------------
-# Draw the actual page, starting with the referrals table.
+# Form for adding hospital information
 
-# Set the title that appears at the top of the page.
-"""
-# :hospital: Referral Patient Tracker
+st.sidebar.header("Add New Hospital Information")
 
-**Welcome to the Referral Patient Tracker!**
-This page reads and writes directly from/to our referral patient database.
-"""
+with st.sidebar.form(key='hospital_form'):
+    st.header("Hospital Information Form")
+    hospital_name = st.text_input("Hospital Name")
+    description = st.text_area("A brief description", max_chars=300)
+    city = st.text_input("City")
+    state = st.text_input("State")
+    total_beds = st.number_input("Total Bed Units", min_value=1)
+    
+    # Selection list for Empanelled TPA
+    tpa_list = ["TPA1", "TPA2", "TPA3"]  # Example TPA list
+    empanelled_tpa = st.selectbox("Empanelled TPA", options=tpa_list)
+    
+    submit_button = st.form_submit_button(label='Submit')
+    
+    if submit_button:
+        add_hospital_to_db(hospital_name, description, city, state, total_beds, empanelled_tpa)
+        st.sidebar.success(f"HELLO {hospital_name}!")
+        st.experimental_rerun()  # Refresh the app to show home screen
 
-st.info(
-    """
-    Use the table below to add, remove, and edit patient referrals.
-    And don't forget to commit your changes when you're done.
-    """
-)
+# -----------------------------------------------------------------------------
+# Home screen content
+if st.session_state.get('hospital_name'):
+    st.title(f"HELLO {st.session_state['hospital_name']}")
 
 # Connect to database and create table if needed
 conn, db_was_just_created = connect_db()

@@ -123,7 +123,7 @@ def update_data(conn, df, changes):
 
     conn.commit()
 
-def add_hospital_to_db(name, description, city, state, total_beds, tpa):
+def add_hospital_to_db(name, description, city, state, total_beds, tpas):
     """Adds new hospital details to the database."""
     cursor = conn.cursor()
     cursor.execute(
@@ -135,47 +135,57 @@ def add_hospital_to_db(name, description, city, state, total_beds, tpa):
             city TEXT,
             state TEXT,
             total_beds INTEGER,
-            empanelled_tpa TEXT
+            empanelled_tpas TEXT
         )
         """
     )
     cursor.execute(
         """
-        INSERT INTO hospitals (hospital_name, description, city, state, total_beds, empanelled_tpa)
+        INSERT INTO hospitals (hospital_name, description, city, state, total_beds, empanelled_tpas)
         VALUES (?, ?, ?, ?, ?, ?)
         """,
-        (name, description, city, state, total_beds, tpa)
+        (name, description, city, state, total_beds, ", ".join(tpas))
     )
     conn.commit()
 
 # -----------------------------------------------------------------------------
+# Define TPA options (Mock Data from Doctor App)
+tpa_options = ["TPA1", "TPA2", "TPA3"]
+
 # Form for adding hospital information
+if 'form_submitted' not in st.session_state:
+    st.session_state['form_submitted'] = False
 
-st.sidebar.header("Add New Hospital Information")
+if not st.session_state['form_submitted']:
+    st.sidebar.header("Add New Hospital Information")
 
-with st.sidebar.form(key='hospital_form'):
-    st.header("Hospital Information Form")
-    hospital_name = st.text_input("Hospital Name")
-    description = st.text_area("A brief description", max_chars=300)
-    city = st.text_input("City")
-    state = st.text_input("State")
-    total_beds = st.number_input("Total Bed Units", min_value=1)
-    
-    # Selection list for Empanelled TPA
-    tpa_list = ["TPA1", "TPA2", "TPA3"]  # Example TPA list
-    empanelled_tpa = st.selectbox("Empanelled TPA", options=tpa_list)
-    
-    submit_button = st.form_submit_button(label='Submit')
-    
-    if submit_button:
-        add_hospital_to_db(hospital_name, description, city, state, total_beds, empanelled_tpa)
-        st.sidebar.success(f"HELLO {hospital_name}!")
-        st.experimental_rerun()  # Refresh the app to show home screen
+    with st.sidebar.form(key='hospital_form'):
+        st.header("Hospital Information Form")
+        hospital_name = st.text_input("Hospital Name")
+        description = st.text_area("A brief description", max_chars=300)
+        city = st.text_input("City")
+        state = st.text_input("State")
+        total_beds = st.number_input("Total Bed Units", min_value=1)
+        
+        # Multi-selection list for Empanelled TPA
+        empanelled_tpas = st.multiselect("Empanelled TPA", options=tpa_options)
+        
+        submit_button = st.form_submit_button(label='Submit')
+        
+        if submit_button:
+            add_hospital_to_db(hospital_name, description, city, state, total_beds, empanelled_tpas)
+            st.session_state['form_submitted'] = True
+            st.experimental_rerun()  # Refresh the app to show the new screen
+else:
+    # Display a message on the new screen
+    st.title("Welcome to the Hospital App")
+    st.write("Thank you for submitting your details. The hospital has been added.")
+    st.write("You can now navigate to the referral tracking screen from the sidebar.")
 
 # -----------------------------------------------------------------------------
-# Home screen content
-if st.session_state.get('hospital_name'):
-    st.title(f"HELLO {st.session_state['hospital_name']}")
+# Home screen content if form has been submitted
+if st.session_state['form_submitted']:
+    st.title(f"HELLO {hospital_name}")
 
 # Connect to database and create table if needed
 conn, db_was_just_created = connect_db()

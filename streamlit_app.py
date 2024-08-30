@@ -120,7 +120,7 @@ def update_data(conn, df, changes):
 
     conn.commit()
 
-def add_hospital_to_db(name, description, city, state, total_beds, tpas):
+def add_hospital_to_db(conn, name, description, city, state, total_beds, tpas):
     """Adds new hospital details to the database."""
     cursor = conn.cursor()
     cursor.execute(
@@ -171,7 +171,7 @@ if not st.session_state['form_submitted']:
         
         if submit_button:
             try:
-                add_hospital_to_db(hospital_name, description, city, state, total_beds, empanelled_tpas)
+                add_hospital_to_db(conn, hospital_name, description, city, state, total_beds, empanelled_tpas)
                 st.session_state['form_submitted'] = True
                 st.experimental_rerun()  # Refresh the app to show the new screen
             except Exception as e:

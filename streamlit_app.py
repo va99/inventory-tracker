@@ -263,15 +263,7 @@ st.altair_chart(
     .mark_bar()
     .encode(
         x=alt.X('Count', title='Number of Referrals'),
-        y=alt.Y('TPA Partner', sort='-x', title='TPA Partner'),
-        color='TPA Partner'
-    )
-    .properties(
-        title="Best-Selling TPAs"
-    )
-    .interactive()
-    .configure_axis(
-        labelAngle=0
+        y=alt.Y('TPA Partner', title='TPA Partner')
     ),
     use_container_width=True
 )

@@ -58,6 +58,8 @@ if 'df' not in st.session_state:
     st.session_state.df = df
 if 'total_patients' not in st.session_state:
     st.session_state.total_patients = 67
+if 'total_revenue_inr' not in st.session_state:
+    st.session_state.total_revenue_inr = 67 * 1299 * 83.5  # Initialize with the default revenue value
 
 # Display editable table
 edited_df = st.data_editor(

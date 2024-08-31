@@ -8,7 +8,7 @@ st.set_page_config(
     page_icon=":hospital:"
 )
 
-# TPA names dictionary (for demonstration)
+# TPA names dictionary
 tpa_names = {
     "01": "Medi Assist",
     "02": "Paramount Health Services",
@@ -53,9 +53,13 @@ def map_tpa_names(df):
 
 df = map_tpa_names(df)
 
+# Initialize session state if not already present
+if 'df' not in st.session_state:
+    st.session_state.df = df
+
 # Display editable table
 edited_df = st.data_editor(
-    df,
+    st.session_state.df,
     disabled=["id"],  # Don't allow editing the 'id' column
     num_rows="dynamic",  # Allow appending/deleting rows
     key="referrals_table",
@@ -68,6 +72,8 @@ has_uncommitted_changes = any(len(v) for v in st.session_state.referrals_table.v
 def update_data():
     """Simulates updating the referral patient data."""
     changes = st.session_state.referrals_table
+    df = st.session_state.df.copy()  # Work on a copy of the DataFrame
+
     if changes["edited_rows"]:
         deltas = changes["edited_rows"]
         for i, delta in deltas.items():
@@ -77,14 +83,13 @@ def update_data():
 
     if changes["added_rows"]:
         new_rows = pd.DataFrame(changes["added_rows"])
-        global df
         df = pd.concat([df, new_rows], ignore_index=True)
 
     if changes["deleted_rows"]:
         df.drop(index=changes["deleted_rows"], inplace=True)
         df.reset_index(drop=True, inplace=True)
 
-    st.session_state.referrals_table = df
+    st.session_state.df = df
 
 st.button(
     "Commit changes",
@@ -123,7 +128,7 @@ st.altair_chart(
 )
 
 # Sample data for TPA Partners
-tpa_data = df['tpa_partner'].value_counts().reset_index()
+tpa_data = st.session_state.df['tpa_partner'].value_counts().reset_index()
 tpa_data.columns = ['TPA Partner', 'Count']
 
 st.subheader("Best-Selling TPAs")
@@ -147,7 +152,7 @@ st.altair_chart(
 )
 
 # Total Patients and Revenue
-total_patients = len(df)
+total_patients = len(st.session_state.df)
 revenue_per_patient = 1299
 total_revenue = total_patients * revenue_per_patient
 

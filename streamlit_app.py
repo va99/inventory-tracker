@@ -109,23 +109,21 @@ bed_occupancy_data['Available'] = bed_occupancy_data['Total'] - bed_occupancy_da
 
 st.subheader("Bed Occupancy")
 
-st.altair_chart(
-    alt.Chart(bed_occupancy_data)
-    .mark_bar()
-    .encode(
-        x=alt.X('Unit:O', title='Unit'),
-        y=alt.Y('Available:Q', title='Available Beds'),
-        color='Unit:N'
-    )
-    .properties(
-        title="Bed Occupancy"
-    )
-    .interactive()
-    .configure_axis(
-        labelAngle=0
-    ),
-    use_container_width=True
+# Visualization for bed occupancy
+bed_occupancy_chart = alt.Chart(bed_occupancy_data).transform_fold(
+    ['Occupied', 'Available'],
+    as_=['Status', 'Count']
+).mark_bar().encode(
+    x=alt.X('Unit:O', title='Unit'),
+    y=alt.Y('Count:Q', title='Number of Beds'),
+    color='Status:N'
+).properties(
+    title="Bed Occupancy"
+).interactive().configure_axis(
+    labelAngle=0
 )
+
+st.altair_chart(bed_occupancy_chart, use_container_width=True)
 
 # Sample data for TPA Partners
 tpa_data = st.session_state.df['tpa_partner'].value_counts().reset_index()
@@ -133,29 +131,26 @@ tpa_data.columns = ['TPA Partner', 'Count']
 
 st.subheader("Best-Selling TPAs")
 
-st.altair_chart(
-    alt.Chart(tpa_data)
-    .mark_bar()
-    .encode(
-        x=alt.X('Count:Q', title='Number of Referrals'),
-        y=alt.Y('TPA Partner:N', sort='-x', title='TPA Partner'),
-        color='TPA Partner:N'
-    )
-    .properties(
-        title="Best-Selling TPAs"
-    )
-    .interactive()
-    .configure_axis(
-        labelAngle=0
-    ),
-    use_container_width=True
+# Visualization for best-selling TPAs
+tpa_chart = alt.Chart(tpa_data).mark_bar().encode(
+    x=alt.X('Count:Q', title='Number of Referrals'),
+    y=alt.Y('TPA Partner:N', sort='-x', title='TPA Partner'),
+    color='TPA Partner:N'
+).properties(
+    title="Best-Selling TPAs"
+).interactive().configure_axis(
+    labelAngle=0
 )
 
-# Total Patients and Revenue
-total_patients = len(st.session_state.df)
+st.altair_chart(tpa_chart, use_container_width=True)
+
+# Summary
+total_patients = 67
 revenue_per_patient = 1299
-total_revenue = total_patients * revenue_per_patient
+total_revenue_usd = total_patients * revenue_per_patient
+exchange_rate = 83.5  # Example conversion rate (1 USD = 83.5 INR)
+total_revenue_inr = total_revenue_usd * exchange_rate
 
 st.subheader("Summary")
 st.write(f"**Total Patients:** {total_patients}")
-st.write(f"**Revenue:** ${total_revenue:,}")
+st.write(f"**Revenue (INR):** ₹{total_revenue_inr:,.2f}")

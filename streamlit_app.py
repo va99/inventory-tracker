@@ -42,28 +42,19 @@ tpa_names = {
     "30": "Edelweiss Tokio"
 }
 
-# Mock data for referral patients with increased entries
+# Mock data for referral patients with more entries
 data = {
-    "id": list(range(1, 21)),
-    "referral_id": [f"R00{i}" for i in range(1, 21)],
+    "id": list(range(1, 101)),
+    "referral_id": [f"R00{i}" for i in range(1, 101)],
     "patient_name": [
-        "John Doe", "Jane Smith", "Alice Brown", "Bob Johnson", "Carol White",
-        "David Wilson", "Emma Davis", "Frank Moore", "Grace Taylor", "Hannah Lee",
-        "Isaac Harris", "Jasmine Clark", "Kieran Lewis", "Lily Walker", "Mia Young",
-        "Nathan Hall", "Olivia Allen", "Paul Scott", "Quinn Adams", "Rachel King"
+        f"Patient {i}" for i in range(1, 101)
     ],
-    "patient_age": [45, 34, 29, 52, 41, 33, 26, 38, 50, 42, 55, 60, 27, 40, 32, 28, 37, 44, 50, 39],
+    "patient_age": [i % 60 + 20 for i in range(1, 101)],
     "patient_mobile": [
-        "9876543210", "8765432109", "7654321098", "6543210987", "5432109876",
-        "4321098765", "3210987654", "2109876543", "1098765432", "0987654321",
-        "9876509876", "8765412345", "7654321097", "6543210986", "5432109875",
-        "4321098764", "3210987653", "2109876542", "1098765431", "0987654320"
+        f"99999999{i}" for i in range(1, 101)
     ],
     "tpa_partner": [
-        "01", "02", "03", "04", "05",
-        "06", "07", "08", "09", "10",
-        "11", "12", "13", "14", "15",
-        "16", "17", "18", "19", "20"
+        f"{i % 30 + 1:02d}" for i in range(1, 101)
     ]
 }
 
@@ -82,9 +73,9 @@ df = map_tpa_names(df)
 if 'df' not in st.session_state:
     st.session_state.df = df
 if 'total_patients' not in st.session_state:
-    st.session_state.total_patients = len(df)
+    st.session_state.total_patients = 67
 if 'total_revenue_inr' not in st.session_state:
-    st.session_state.total_revenue_inr = len(df) * 1299 * 83.5  # Initialize with the default revenue value
+    st.session_state.total_revenue_inr = 67 * 1299 * 83.5  # Initialize with the default revenue value
 
 # Display editable table
 edited_df = st.data_editor(
@@ -120,21 +111,9 @@ def update_data():
 
     st.session_state.df = df
 
-    # Update patient count
-    st.session_state.total_patients = len(df)
-
-    # Update revenue
-    update_summary()
-
-def update_summary():
-    """Updates summary information."""
-    total_patients = st.session_state.total_patients
-    revenue_per_patient = 1299
-    total_revenue_usd = total_patients * revenue_per_patient
-    exchange_rate = 83.5  # Example conversion rate (1 USD = 83.5 INR)
-    total_revenue_inr = total_revenue_usd * exchange_rate
-    
-    st.session_state.total_revenue_inr = total_revenue_inr
+    # Update patient count and revenue
+    st.session_state.total_patients = 67
+    st.session_state.total_revenue_inr = 67 * 1299 * 83.5  # Update with fixed patient count
 
 st.button(
     "Commit changes",
@@ -175,7 +154,7 @@ bed_occupancy_chart = alt.Chart(bed_occupancy_data).transform_fold(
 
 st.altair_chart(bed_occupancy_chart, use_container_width=True)
 
-# Sample data for TPA Partners with more entries
+# Sample data for TPA Partners with dynamic entries
 tpa_data = st.session_state.df['tpa_partner'].value_counts().reset_index()
 tpa_data.columns = ['TPA Partner', 'Count']
 

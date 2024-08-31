@@ -56,6 +56,8 @@ df = map_tpa_names(df)
 # Initialize session state if not already present
 if 'df' not in st.session_state:
     st.session_state.df = df
+if 'total_patients' not in st.session_state:
+    st.session_state.total_patients = 67
 
 # Display editable table
 edited_df = st.data_editor(
@@ -91,6 +93,22 @@ def update_data():
 
     st.session_state.df = df
 
+    # Update patient count
+    st.session_state.total_patients = len(df)
+
+    # Update revenue
+    update_summary()
+
+def update_summary():
+    """Updates summary information."""
+    total_patients = st.session_state.total_patients
+    revenue_per_patient = 1299
+    total_revenue_usd = total_patients * revenue_per_patient
+    exchange_rate = 83.5  # Example conversion rate (1 USD = 83.5 INR)
+    total_revenue_inr = total_revenue_usd * exchange_rate
+    
+    st.session_state.total_revenue_inr = total_revenue_inr
+
 st.button(
     "Commit changes",
     type="primary",
@@ -106,6 +124,11 @@ bed_occupancy_data = pd.DataFrame({
 })
 
 bed_occupancy_data['Available'] = bed_occupancy_data['Total'] - bed_occupancy_data['Occupied']
+
+# Summary
+st.subheader("Summary")
+st.markdown(f"### **Total Patients:** {st.session_state.total_patients}")
+st.markdown(f"### **Revenue (INR):** ₹{st.session_state.total_revenue_inr:,.2f}")
 
 st.subheader("Bed Occupancy")
 
@@ -143,14 +166,3 @@ tpa_chart = alt.Chart(tpa_data).mark_bar().encode(
 )
 
 st.altair_chart(tpa_chart, use_container_width=True)
-
-# Summary
-total_patients = 67
-revenue_per_patient = 1299
-total_revenue_usd = total_patients * revenue_per_patient
-exchange_rate = 83.5  # Example conversion rate (1 USD = 83.5 INR)
-total_revenue_inr = total_revenue_usd * exchange_rate
-
-st.subheader("Summary")
-st.write(f"**Total Patients:** {total_patients}")
-st.write(f"**Revenue (INR):** ₹{total_revenue_inr:,.2f}")

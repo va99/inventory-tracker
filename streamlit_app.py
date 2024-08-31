@@ -1,7 +1,6 @@
 import pandas as pd
 import altair as alt
 import streamlit as st
-from collections import defaultdict
 
 # Set the title and favicon for the app
 st.set_page_config(
@@ -9,7 +8,7 @@ st.set_page_config(
     page_icon=":hospital:"
 )
 
-# TPA names dictionary
+# TPA names dictionary (for demonstration)
 tpa_names = {
     "01": "Medi Assist",
     "02": "Paramount Health Services",
@@ -40,7 +39,7 @@ data = {
     "patient_name": ["John Doe", "Jane Smith", "Alice Brown", "Bob Johnson", "Carol White"],
     "patient_age": [45, 34, 29, 52, 41],
     "patient_mobile": ["9876543210", "8765432109", "7654321098", "6543210987", "5432109876"],
-    "tpa_partner": ["Medi Assist", "Paramount Health Services", "FHPL (Family Health Plan Limited)", "Health India TPA", "Star Health"]
+    "tpa_partner": ["01", "02", "03", "04", "05"]  # Use TPA codes for simplicity
 }
 
 # Convert mock data into DataFrame
@@ -65,7 +64,7 @@ edited_df = st.data_editor(
 # Check if there are uncommitted changes
 has_uncommitted_changes = any(len(v) for v in st.session_state.referrals_table.values())
 
-# Function to handle mock data updates (no actual database involved)
+# Function to handle mock data updates
 def update_data():
     """Simulates updating the referral patient data."""
     changes = st.session_state.referrals_table
@@ -78,6 +77,7 @@ def update_data():
 
     if changes["added_rows"]:
         new_rows = pd.DataFrame(changes["added_rows"])
+        global df
         df = pd.concat([df, new_rows], ignore_index=True)
 
     if changes["deleted_rows"]:
@@ -145,3 +145,12 @@ st.altair_chart(
     ),
     use_container_width=True
 )
+
+# Total Patients and Revenue
+total_patients = len(df)
+revenue_per_patient = 1299
+total_revenue = total_patients * revenue_per_patient
+
+st.subheader("Summary")
+st.write(f"**Total Patients:** {total_patients}")
+st.write(f"**Revenue:** ${total_revenue:,}")

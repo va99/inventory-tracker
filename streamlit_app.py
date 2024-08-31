@@ -8,7 +8,7 @@ st.set_page_config(
     page_icon=":hospital:"
 )
 
-# TPA names dictionary
+# Updated TPA names dictionary with more entries
 tpa_names = {
     "01": "Medi Assist",
     "02": "Paramount Health Services",
@@ -29,17 +29,42 @@ tpa_names = {
     "17": "IFFCO Tokio",
     "18": "Cholamandalam MS General Insurance",
     "19": "Bajaj Allianz",
-    "20": "Reliance General Insurance"
+    "20": "Reliance General Insurance",
+    "21": "Liberty General Insurance",
+    "22": "Kotak Mahindra General Insurance",
+    "23": "HDFC Life",
+    "24": "SBI Life Insurance",
+    "25": "Tata AIG",
+    "26": "Bharti AXA",
+    "27": "Go Digit Insurance",
+    "28": "Future Generali",
+    "29": "Aditya Birla Health Insurance",
+    "30": "Edelweiss Tokio"
 }
 
-# Mock data for referral patients
+# Mock data for referral patients with increased entries
 data = {
-    "id": [1, 2, 3, 4, 5],
-    "referral_id": ["R001", "R002", "R003", "R004", "R005"],
-    "patient_name": ["John Doe", "Jane Smith", "Alice Brown", "Bob Johnson", "Carol White"],
-    "patient_age": [45, 34, 29, 52, 41],
-    "patient_mobile": ["9876543210", "8765432109", "7654321098", "6543210987", "5432109876"],
-    "tpa_partner": ["01", "02", "03", "04", "05"]  # Use TPA codes for simplicity
+    "id": list(range(1, 21)),
+    "referral_id": [f"R00{i}" for i in range(1, 21)],
+    "patient_name": [
+        "John Doe", "Jane Smith", "Alice Brown", "Bob Johnson", "Carol White",
+        "David Wilson", "Emma Davis", "Frank Moore", "Grace Taylor", "Hannah Lee",
+        "Isaac Harris", "Jasmine Clark", "Kieran Lewis", "Lily Walker", "Mia Young",
+        "Nathan Hall", "Olivia Allen", "Paul Scott", "Quinn Adams", "Rachel King"
+    ],
+    "patient_age": [45, 34, 29, 52, 41, 33, 26, 38, 50, 42, 55, 60, 27, 40, 32, 28, 37, 44, 50, 39],
+    "patient_mobile": [
+        "9876543210", "8765432109", "7654321098", "6543210987", "5432109876",
+        "4321098765", "3210987654", "2109876543", "1098765432", "0987654321",
+        "9876509876", "8765412345", "7654321097", "6543210986", "5432109875",
+        "4321098764", "3210987653", "2109876542", "1098765431", "0987654320"
+    ],
+    "tpa_partner": [
+        "01", "02", "03", "04", "05",
+        "06", "07", "08", "09", "10",
+        "11", "12", "13", "14", "15",
+        "16", "17", "18", "19", "20"
+    ]
 }
 
 # Convert mock data into DataFrame
@@ -57,9 +82,9 @@ df = map_tpa_names(df)
 if 'df' not in st.session_state:
     st.session_state.df = df
 if 'total_patients' not in st.session_state:
-    st.session_state.total_patients = 67
+    st.session_state.total_patients = len(df)
 if 'total_revenue_inr' not in st.session_state:
-    st.session_state.total_revenue_inr = 67 * 1299 * 83.5  # Initialize with the default revenue value
+    st.session_state.total_revenue_inr = len(df) * 1299 * 83.5  # Initialize with the default revenue value
 
 # Display editable table
 edited_df = st.data_editor(
@@ -150,7 +175,7 @@ bed_occupancy_chart = alt.Chart(bed_occupancy_data).transform_fold(
 
 st.altair_chart(bed_occupancy_chart, use_container_width=True)
 
-# Sample data for TPA Partners
+# Sample data for TPA Partners with more entries
 tpa_data = st.session_state.df['tpa_partner'].value_counts().reset_index()
 tpa_data.columns = ['TPA Partner', 'Count']
 
